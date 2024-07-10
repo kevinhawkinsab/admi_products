@@ -1,0 +1,39 @@
+.stock {
+    display: flex;
+    color: green;
+    font-weight: bold;
+    align-items: center;
+
+    svg {
+        font-size: 12px;
+        margin-right: 5px;
+    }
+}
+
+.limited {
+    display: flex;
+    color: orange;
+    font-weight: bold;
+    align-items: center;
+
+    svg {
+        font-size: 12px;
+        margin-right: 5px;
+    }
+}
+
+.out-of-stock {
+    display: flex;
+    color: red;
+    font-weight: bold;
+    align-items: center;
+
+    svg {
+        font-size: 12px;
+        margin-right: 5px;
+    }
+}
+
+.css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input {
+    height: 0.4em !important;
+}

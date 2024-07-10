@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 // import Link from '@mui/material/Link';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -8,82 +8,28 @@ import TableRow from '@mui/material/TableRow';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditNoteIcon from '@mui/icons-material/EditNote';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
-function createData(
-  id: number,
-  date: string,
-  name: string,
-  shipTo: string,
-  paymentMethod: string,
-  amount: number,
-) {
-  return { id, date, name, shipTo, paymentMethod, amount };
+interface Product {
+  id: number;
+  name: string;
+  categoryId: number;
+  price: number;
+  quantity: number;
+  description: string;
+  inventory: string;
 }
-
-const rows = [
-  createData(
-    0,
-    '16 Mar, 2019',
-    'Elvis Presley',
-    'Tupelo, MS',
-    'VISA ⠀•••• 3719',
-    312.44,
-  ),
-  createData(
-    1,
-    '16 Mar, 2019',
-    'Paul McCartney',
-    'London, UK',
-    'VISA ⠀•••• 2574',
-    866.99,
-  ),
-  createData(2, '16 Mar, 2019', 'Tom Scholz', 'Boston, MA', 'MC ⠀•••• 1253', 100.81),
-  createData(
-    3,
-    '16 Mar, 2019',
-    'Michael Jackson',
-    'Gary, IN',
-    'AMEX ⠀•••• 2000',
-    654.39,
-  ),
-  createData(
-    4,
-    '15 Mar, 2019',
-    'Bruce Springsteen',
-    'Long Branch, NJ',
-    'VISA ⠀•••• 5919',
-    212.79,
-  ),
-];
 
 // function preventDefault(event: React.MouseEvent) {
 //   event.preventDefault();
 // }
 
 
-const deleteProduct = () => {
-  Swal.fire({
-    title: "Are you sure?",
-    text: "You won't be able to revert this!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, delete it!"
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Swal.fire({
-        title: "Deleted!",
-        text: "The product has been deleted.",
-        icon: "success"
-      });
-    }
-  });
-}
-
 export default function Orders() {
-  const [openUpdateModal, setOpenUpdateModal] = React.useState(true);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
   
   const editProduct = () => {
     setOpenUpdateModal(true);
@@ -91,6 +37,20 @@ export default function Orders() {
 
   const updateProductClose = () => {
     setOpenUpdateModal(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('https://localhost:7151/api/Product/Products');
+      console.log(response.data);
+      setProducts(response.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const updProduct = (event: React.FormEvent<HTMLFormElement>) => {
@@ -111,6 +71,34 @@ export default function Orders() {
     });
   };
 
+  const deleteProduct = (id: number) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        console.log(id)
+        try {
+          const response = await axios.delete(`https://localhost:7151/api/Product/Remove/${id}`);
+          console.log(response.data);
+          Swal.fire({
+            title: "Deleted!",
+            text: "The product has been deleted.",
+            icon: "success"
+          });
+          fetchData();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
+  }
+
 
   return (
     <React.Fragment>
@@ -118,27 +106,37 @@ export default function Orders() {
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Date</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Ship To</TableCell>
-            <TableCell>Payment Method</TableCell>
-            <TableCell>Sale Amount</TableCell>
+            <TableCell>Imagen</TableCell>
+            <TableCell>Nombre</TableCell>
+            <TableCell>Categoría</TableCell>
+            <TableCell>Precio</TableCell>
+            <TableCell>Cantidad</TableCell>
+            <TableCell>Inventario</TableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{row.date}</TableCell>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.shipTo}</TableCell>
-              <TableCell>{row.paymentMethod}</TableCell>
-              <TableCell>{`$${row.amount}`}</TableCell>
+          {products.map((product) => (
+            <TableRow key={product.id}>
+              <TableCell>{product.id}</TableCell>
+              <TableCell>{product.name}</TableCell>
+              <TableCell>{product.categoryId}</TableCell>
+              <TableCell>{product.price}</TableCell>
+              <TableCell>{product.quantity}</TableCell>
+              <TableCell>
+                {product.inventory === 'En Stock' ? (
+                  <p className='stock'><FiberManualRecordIcon /> {product.inventory}</p>
+                ) : product.inventory === 'Limitado' ? (
+                  <p className='limited'><FiberManualRecordIcon /> {product.inventory}</p>
+                ) : (
+                  <p className='out-of-stock'><FiberManualRecordIcon /> {product.inventory}</p>
+                )}
+              </TableCell>
               <TableCell align="right">
                 <IconButton aria-label="edit" onClick={editProduct}>
                   <EditNoteIcon />
                 </IconButton>
-                <IconButton aria-label="delete" onClick={deleteProduct}>
+                <IconButton aria-label="delete" onClick={() => deleteProduct(product.id)}>
                   <DeleteIcon />
                 </IconButton>
               </TableCell>
@@ -152,7 +150,7 @@ export default function Orders() {
           onSubmit: updProduct
         }}
       >
-        <DialogTitle>New Product</DialogTitle>
+        <DialogTitle>Update Product</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid sx={{paddingTop: '1rem'}} item xs={12} sm={6}>
@@ -176,7 +174,7 @@ export default function Orders() {
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Save
           </Button>
-          <Button type="submit" onClick={updateProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Button type="submit" color='error' onClick={updateProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Cancel
           </Button>
         </DialogActions>

@@ -21,20 +21,20 @@ import AddIcon from '@mui/icons-material/Add';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { Button, InputAdornment, ListItemButton, ListItemIcon, ListItemText, TextField } from '@mui/material';
 import Orders from './Orders';
-import './Dashboard.css';
 import SearchIcon from '@mui/icons-material/Search';
 import Swal from 'sweetalert2';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import axios from 'axios';
 
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Valhalla Cybernetics
+      <Link color="inherit" href="https://www.vhla.net/">
+        Kevin Hawkins From Valhalla Cybernetics
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -96,7 +96,7 @@ const defaultTheme = createTheme();
 
 export default function Dashboard() {
   const [open, setOpen] = React.useState(false);
-  const [openAddModal, setOpenAddModal] = React.useState(true);
+  const [openAddModal, setOpenAddModal] = React.useState(false);
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -110,22 +110,40 @@ export default function Dashboard() {
     setOpenAddModal(false);
   };
 
-  const saveProduct = (event: React.FormEvent<HTMLFormElement>) => {
+  const saveProduct = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const product = {
       name: data.get('name'),
-      desc: data.get('desc'),
-      category: data.get('category'),
-      price: data.get('price'),
-      quantity: data.get('quantity'),
+      description: data.get('desc'),
+      categoryId: Number(data.get('category')),
+      price: Number(data.get('price')),
+      quantity: Number(data.get('quantity')),
     }
     console.log(product);
-    Swal.fire({
-      title: "Success!",
-      text: "The product has been created.",
-      icon: "success"
-    });
+    try {
+      const response = await axios.post('https://localhost:7151/api/Product/Create', product, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      setOpenAddModal(false);
+      console.log(response.data);
+      Swal.fire({
+        title: "Success!",
+        text: "The product has been created.",
+        icon: "success"
+      });
+
+    } catch (err: any) {
+      setOpenAddModal(false);
+      Swal.fire({
+        title: "Error!",
+        text: err.response.data,
+        icon: "error"
+      });
+      console.error(err);
+    }
   };
 
 
@@ -186,6 +204,7 @@ export default function Dashboard() {
                   <h2>Products</h2>
                   <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
                     <TextField id="input-with-icon-textfield"
+                      placeholder='Buscar productos'
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -195,7 +214,7 @@ export default function Dashboard() {
                       }}
                       variant="outlined"
                     />
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={addProduct}>Add product</Button>
+                    <Button variant="contained" sx={{textTransform: 'capitalize'}} startIcon={<AddIcon />} onClick={addProduct}>Añadir Producto</Button>
                   </div>
                 </Paper>
               </Grid>
@@ -239,7 +258,7 @@ export default function Dashboard() {
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Save
           </Button>
-          <Button type="submit" onClick={addProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Button type="submit" color='error' onClick={addProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Cancel
           </Button>
         </DialogActions>
