@@ -81,7 +81,18 @@ namespace backend.Controllers
             dbContext.Products.Add(product);
             await dbContext.SaveChangesAsync();
 
-            return Ok(product);
+            var result = new
+            {
+                product.Id,
+                product.Name,
+                product.Description,
+                product.Price,
+                product.Quantity,
+                product.Inventory,
+                product.CategoryId
+            };
+
+            return Ok(result);
         }
 
         [HttpPut]
@@ -109,7 +120,18 @@ namespace backend.Controllers
 
             await dbContext.SaveChangesAsync();
 
-            return Ok(new { message = "Product successfully updated" });
+            var result = new
+            {
+                product.Id,
+                product.Name,
+                product.Description,
+                product.Price,
+                product.Quantity,
+                product.Inventory,
+                product.CategoryId
+            };
+
+            return Ok(result);
         }
 
 

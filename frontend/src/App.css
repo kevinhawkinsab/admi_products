@@ -1,7 +1,6 @@
 .stock {
     display: flex;
     color: green;
-    font-weight: bold;
     align-items: center;
 
     svg {
@@ -13,7 +12,6 @@
 .limited {
     display: flex;
     color: orange;
-    font-weight: bold;
     align-items: center;
 
     svg {
@@ -25,7 +23,6 @@
 .out-of-stock {
     display: flex;
     color: red;
-    font-weight: bold;
     align-items: center;
 
     svg {

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
@@ -19,13 +19,14 @@ import HomeIcon from '@mui/icons-material/Home'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import AddIcon from '@mui/icons-material/Add';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import { Button, InputAdornment, ListItemButton, ListItemIcon, ListItemText, TextField } from '@mui/material';
+import { Button, FormControl, InputAdornment, InputLabel, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, TextField } from '@mui/material';
 import Orders from './Orders';
 import SearchIcon from '@mui/icons-material/Search';
 import Swal from 'sweetalert2';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DialogTitle from '@mui/material/DialogTitle';
 import axios from 'axios';
 
@@ -47,6 +48,22 @@ const drawerWidth: number = 240;
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
+
+interface Category {
+  id: number,
+  name: string
+}
+
+interface Product {
+  id: number;
+  name: string;
+  categoryId: number;
+  price: number;
+  quantity: number;
+  description: string;
+  inventory: string;
+}
+
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
@@ -95,8 +112,13 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 export default function Dashboard() {
-  const [open, setOpen] = React.useState(false);
-  const [openAddModal, setOpenAddModal] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState(1);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [openCatModal, setOpenCatModal] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -110,13 +132,96 @@ export default function Dashboard() {
     setOpenAddModal(false);
   };
 
+  const catProductClose = () => {
+    setOpenCatModal(false);
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchProducts();
+  }, []);
+
+  const handleChange = (event: any) => {
+    console.log('Cat: ', event.target.value);
+    setCategory(event.target.value);
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('https://localhost:7151/api/Category/Categories');
+      console.log(response.data);
+      setCategories(response.data);
+      localStorage.setItem('categories', JSON.stringify(response.data));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('https://localhost:7151/api/Product/Products');
+      console.log(response.data);
+      setProducts(response.data);
+      setFilteredProducts(response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const searchProduct = (event: any) => {
+    const product = event.target.value;    
+    const productList = products.filter(item => item.name.toLowerCase().includes(product.toLowerCase()));
+    
+    console.log(productList);
+
+    if(product){
+      setFilteredProducts(productList);
+    }else {
+      setFilteredProducts(products);
+    }
+
+  };
+
+  const saveCategory = async (event: React.FormEvent<HTMLFormElement>)  => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const category = {
+      name: data.get('catName')
+    }
+    console.log(category);
+
+    try {
+      const response = await axios.post('https://localhost:7151/api/Category/Create', category, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log(response.data);
+      setOpenCatModal(false);
+      Swal.fire({
+        title: "Exito!",
+        text: "La categoría fue creada exitosamente.",
+        icon: "success"
+      });
+      fetchCategories();
+
+    } catch (error: any) {
+      console.log(error);
+      Swal.fire({
+        title: "Error!",
+        text: error.response.data,
+        icon: "error"
+      });
+    }
+  }
+
   const saveProduct = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const product = {
       name: data.get('name'),
       description: data.get('desc'),
-      categoryId: Number(data.get('category')),
+      categoryId: category,
       price: Number(data.get('price')),
       quantity: Number(data.get('quantity')),
     }
@@ -129,20 +234,28 @@ export default function Dashboard() {
       });
       setOpenAddModal(false);
       console.log(response.data);
+      fetchProducts();
       Swal.fire({
-        title: "Success!",
-        text: "The product has been created.",
+        title: "Exito!",
+        text: "El producto fue creado exitosamente.",
         icon: "success"
       });
 
     } catch (err: any) {
       setOpenAddModal(false);
+      console.error(err);
+
+      const nestedData = err.response.data;
+      console.log(nestedData)
+
+      const value: any = Object.values(nestedData)[0];
+      const message = value[0];
+
       Swal.fire({
         title: "Error!",
-        text: err.response.data,
+        text: message,
         icon: "error"
       });
-      console.error(err);
     }
   };
 
@@ -164,9 +277,9 @@ export default function Dashboard() {
             <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
               Prueba Técnica Fullstack
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
+            <IconButton color="inherit" onClick={(()=> setOpenCatModal(true))}>
+              <Badge color="secondary">
+                <AddCircleIcon />
               </Badge>
             </IconButton>
           </Toolbar>
@@ -201,10 +314,9 @@ export default function Dashboard() {
             <Grid container spacing={3}>
               <Grid item xs={12} md={12} lg={12}>
                 <Paper sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}>
-                  <h2>Products</h2>
+                  <h2>Productos</h2>
                   <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
-                    <TextField id="input-with-icon-textfield"
-                      placeholder='Buscar productos'
+                    <TextField id="input-with-icon-textfield" placeholder='Buscar productos' onChange={searchProduct}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -220,7 +332,7 @@ export default function Dashboard() {
               </Grid>
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <Orders />
+                  <Orders products={filteredProducts} />
                 </Paper>
               </Grid>
             </Grid>
@@ -228,38 +340,68 @@ export default function Dashboard() {
           </Container>
         </Box>
       </Box>
-      <Dialog open={openAddModal} onClose={addProductClose}
-        PaperProps={{
-          component: 'form',
-          onSubmit: saveProduct
-        }}
-      >
-        <DialogTitle>New Product</DialogTitle>
+      <Dialog open={openAddModal} onClose={addProductClose} PaperProps={{component: 'form', onSubmit: saveProduct}}>
+        <DialogTitle>Nuevo Producto</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid sx={{paddingTop: '1rem'}} item xs={12} sm={6}>
-              <TextField name="name" required fullWidth id="name" label="Name" autoFocus />
+              <TextField name="name" required fullWidth id="name" label="Nombre" autoFocus />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth id="category" label="Category" name="category" />
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Categoria</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={category}
+                  label="Category"
+                  onChange={handleChange}
+                >
+                  {categories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {/* <TextField required fullWidth id="category" label="Category" name="category" /> */}
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth name="price" label="Price" type="price" id="price" />
+              <TextField required fullWidth name="price" label="Precio" type="price" id="price" />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth  name="quantity" label="Quantity" type="quantity" id="quantity" />
+              <TextField required fullWidth  name="quantity" label="Cantidad" type="quantity" id="quantity" />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <TextField required fullWidth multiline rows={4} id="desc" label="Description" name="desc" />
+              <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{padding: '0 1.5rem'}}>
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Save
+            Guardar
           </Button>
           <Button type="submit" color='error' onClick={addProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Cancel
+            Cancelar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+      {/* CATEGORY MODAL */}
+      <Dialog open={openCatModal} onClose={catProductClose} PaperProps={{component: 'form', onSubmit: saveCategory}}>
+        <DialogTitle>Nueva Categoria</DialogTitle>
+        <DialogContent>
+          <Grid container>
+            <Grid sx={{paddingTop: '1rem'}} item xs={12}>
+              <TextField name="catName" required fullWidth id="catName" label="Categoria" autoFocus />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{padding: '0 1.5rem'}}>
+          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+            Guardar
+          </Button>
+          <Button type="submit" color='error' onClick={catProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+            Cancelar
           </Button>
         </DialogActions>
       </Dialog>

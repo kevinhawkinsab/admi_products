@@ -12,6 +12,12 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
+
+interface Category {
+  id: number;
+  name: string;
+}
+
 interface Product {
   id: number;
   name: string;
@@ -22,12 +28,8 @@ interface Product {
   inventory: string;
 }
 
-// function preventDefault(event: React.MouseEvent) {
-//   event.preventDefault();
-// }
-
-
-export default function Orders() {
+export default function Orders(props: {products: Product[]}, ) {
+  const [categories, setCategories] = useState<Array<Category> | null>(null);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   
@@ -40,18 +42,26 @@ export default function Orders() {
   };
 
   useEffect(() => {
-    fetchData();
+    const cat = localStorage.getItem('categories');
+    console.log(cat)
+    if (cat) {
+      setCategories(JSON.parse(cat));
+    } else {
+      setCategories(null);
+    }
+    console.log('Hi')
+    // if(props.productCreated) console.log('Hi')
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get('https://localhost:7151/api/Product/Products');
-      console.log(response.data);
-      setProducts(response.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await axios.get('https://localhost:7151/api/Product/Products');
+  //     console.log(response.data);
+  //     setProducts(response.data);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
   const updProduct = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -69,6 +79,12 @@ export default function Orders() {
       text: "The product has been updated.",
       icon: "success"
     });
+  };
+
+  const getCategoryName = (cat: number): string | null => {
+    const category = categories?.find((element)=> element.id == cat);
+    // console.log(category);
+    return category ? category.name : null;
   };
 
   const deleteProduct = (id: number) => {
@@ -91,7 +107,7 @@ export default function Orders() {
             text: "The product has been deleted.",
             icon: "success"
           });
-          fetchData();
+          // fetchData();
         } catch (err) {
           console.error(err);
         }
@@ -102,7 +118,7 @@ export default function Orders() {
 
   return (
     <React.Fragment>
-      <h3>List of Products</h3>
+      <h3>Lista de Productos</h3>
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -112,15 +128,15 @@ export default function Orders() {
             <TableCell>Precio</TableCell>
             <TableCell>Cantidad</TableCell>
             <TableCell>Inventario</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <TableCell align="right">Acciones</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {products.map((product) => (
+          {props.products.map((product) => (
             <TableRow key={product.id}>
               <TableCell>{product.id}</TableCell>
               <TableCell>{product.name}</TableCell>
-              <TableCell>{product.categoryId}</TableCell>
+              <TableCell>{getCategoryName(product.categoryId)}</TableCell>
               <TableCell>{product.price}</TableCell>
               <TableCell>{product.quantity}</TableCell>
               <TableCell>
@@ -150,32 +166,32 @@ export default function Orders() {
           onSubmit: updProduct
         }}
       >
-        <DialogTitle>Update Product</DialogTitle>
+        <DialogTitle>Actualizar Produto</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid sx={{paddingTop: '1rem'}} item xs={12} sm={6}>
-              <TextField name="name" required fullWidth id="name" label="Name" autoFocus />
+              <TextField name="name" required fullWidth id="name" label="Nombre" autoFocus />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth id="category" label="Category" name="category" />
+              <TextField required fullWidth id="category" label="Categoria" name="category" />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth name="price" label="Price" type="price" id="price" />
+              <TextField required fullWidth name="price" label="Precio" type="price" id="price" />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth  name="quantity" label="Quantity" type="quantity" id="quantity" />
+              <TextField required fullWidth  name="quantity" label="Cantidad" type="quantity" id="quantity" />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <TextField required fullWidth multiline rows={4} id="desc" label="Description" name="desc" />
+              <TextField required fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions sx={{padding: '0 1.5rem'}}>
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Save
+            Guardar
           </Button>
           <Button type="submit" color='error' onClick={updateProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Cancel
+            Cancelar
           </Button>
         </DialogActions>
       </Dialog>
