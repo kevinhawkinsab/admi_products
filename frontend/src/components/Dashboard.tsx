@@ -18,7 +18,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import AddIcon from '@mui/icons-material/Add';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import { Button, FormControl, InputAdornment, InputLabel, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, TextField } from '@mui/material';
 import Orders from './Orders';
 import SearchIcon from '@mui/icons-material/Search';
@@ -332,7 +331,7 @@ export default function Dashboard() {
               </Grid>
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <Orders products={filteredProducts} />
+                  <Orders products={filteredProducts} onProductsUpdate={fetchProducts}/>
                 </Paper>
               </Grid>
             </Grid>
@@ -365,10 +364,10 @@ export default function Dashboard() {
               {/* <TextField required fullWidth id="category" label="Category" name="category" /> */}
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth name="price" label="Precio" type="price" id="price" />
+              <TextField  required fullWidth name="price" label="Precio" id="price" />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth  name="quantity" label="Cantidad" type="quantity" id="quantity" />
+              <TextField required fullWidth  name="quantity" label="Cantidad" id="quantity" />
             </Grid>
             <Grid item xs={12} sm={12}>
               <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" />

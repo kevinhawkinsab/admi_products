@@ -7,16 +7,16 @@
       "RelativeMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|solutionrelative:backend\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|d:\\portfolio\\prueba_tecnica\\backend\\backend\\backend\\models\\dto\\productdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|solutionrelative:backend\\models\\dto\\productdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|d:\\portfolio\\prueba_tecnica\\backend\\backend\\backend\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|solutionrelative:backend\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|d:\\portfolio\\prueba_tecnica\\backend\\backend\\backend\\models\\dto\\categorydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|solutionrelative:backend\\models\\dto\\categorydto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|d:\\portfolio\\prueba_tecnica\\backend\\backend\\backend\\models\\dto\\productdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3A582D3E-F35E-4046-9F0D-05C948A275E3}|backend\\backend.csproj|solutionrelative:backend\\models\\dto\\productdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -36,14 +36,14 @@
               "RelativeDocumentMoniker": "backend\\Controllers\\ProductController.cs",
               "ToolTip": "D:\\Portfolio\\prueba_tecnica\\backend\\backend\\backend\\Controllers\\ProductController.cs",
               "RelativeToolTip": "backend\\Controllers\\ProductController.cs",
-              "ViewState": "AQIAAG0AAAAAAAAAAAAqwH4AAAAkAAAA",
+              "ViewState": "AQIAAGcAAAAAAAAAAAAcwDUAAAAmAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-07-10T10:14:56.634Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "CategoryController.cs",
               "DocumentMoniker": "D:\\Portfolio\\prueba_tecnica\\backend\\backend\\backend\\Controllers\\CategoryController.cs",
               "RelativeDocumentMoniker": "backend\\Controllers\\CategoryController.cs",
@@ -51,25 +51,23 @@
               "RelativeToolTip": "backend\\Controllers\\CategoryController.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAC0AAAAvAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-10T10:10:29.493Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-10T10:10:29.493Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "ProductDto.cs",
               "DocumentMoniker": "D:\\Portfolio\\prueba_tecnica\\backend\\backend\\backend\\Models\\Dto\\ProductDto.cs",
               "RelativeDocumentMoniker": "backend\\Models\\Dto\\ProductDto.cs",
               "ToolTip": "D:\\Portfolio\\prueba_tecnica\\backend\\backend\\backend\\Models\\Dto\\ProductDto.cs",
               "RelativeToolTip": "backend\\Models\\Dto\\ProductDto.cs",
-              "ViewState": "AQIAABQAAAAAAAAAAAAIwAAAAAAAAAAA",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAqwAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-10T10:08:12.05Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-10T10:08:12.05Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "CategoryDto.cs",
               "DocumentMoniker": "D:\\Portfolio\\prueba_tecnica\\backend\\backend\\backend\\Models\\Dto\\CategoryDto.cs",
               "RelativeDocumentMoniker": "backend\\Models\\Dto\\CategoryDto.cs",
@@ -77,8 +75,7 @@
               "RelativeToolTip": "backend\\Models\\Dto\\CategoryDto.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-07-10T10:08:07.497Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-07-10T10:08:07.497Z"
             }
           ]
         }

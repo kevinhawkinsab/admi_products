@@ -5,7 +5,7 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
@@ -28,12 +28,21 @@ interface Product {
   inventory: string;
 }
 
-export default function Orders(props: {products: Product[]}, ) {
+interface OrdersProps {
+  products: Product[];
+  onProductsUpdate: () => void;
+}
+
+export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
   const [categories, setCategories] = useState<Array<Category> | null>(null);
+  const [category, setCategory] = useState(1);
+  const [selectedProduct, setSelectedProducts] = useState<Product | null>(null);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  
-  const editProduct = () => {
+
+  const editProduct = (product: Product) => {
+    console.log(product);
+    setCategory(product.categoryId);
+    setSelectedProducts(product);
     setOpenUpdateModal(true);
   }
 
@@ -43,42 +52,62 @@ export default function Orders(props: {products: Product[]}, ) {
 
   useEffect(() => {
     const cat = localStorage.getItem('categories');
-    console.log(cat)
+    // console.log(cat)
     if (cat) {
       setCategories(JSON.parse(cat));
     } else {
       setCategories(null);
     }
-    console.log('Hi')
-    // if(props.productCreated) console.log('Hi')
   }, []);
 
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await axios.get('https://localhost:7151/api/Product/Products');
-  //     console.log(response.data);
-  //     setProducts(response.data);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
-
-  const updProduct = (event: React.FormEvent<HTMLFormElement>) => {
+  const updProduct = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const product = {
+      id: selectedProduct?.id,
       name: data.get('name'),
-      desc: data.get('desc'),
+      description: data.get('desc'),
       category: data.get('category'),
       price: data.get('price'),
       quantity: data.get('quantity'),
     }
     console.log(product);
-    Swal.fire({
-      title: "Success!",
-      text: "The product has been updated.",
-      icon: "success"
-    });
+    try {
+      const response = await axios.put(`https://localhost:7151/api/Product/Update/`,  product, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log(response.data);
+      updateProductClose();
+      Swal.fire({
+        title: "Exito!",
+        text: "El producto fue actualizado exitosamente.",
+        icon: "success"
+      });
+      
+    } catch (err: any) {
+      console.error(err);
+      updateProductClose();
+      const nestedData = err.response.data;
+      
+      console.log(nestedData)
+
+      const value: any = Object.values(nestedData)[0];
+
+      var message = '';
+      if(nestedData.message) {
+        message = nestedData.message
+      }else {
+        message = value[0];
+      }
+
+      Swal.fire({
+        title: "Error!",
+        text: message,
+        icon: "error"
+      });
+    }
   };
 
   const getCategoryName = (cat: number): string | null => {
@@ -87,15 +116,21 @@ export default function Orders(props: {products: Product[]}, ) {
     return category ? category.name : null;
   };
 
+  const handleChange = (event: any) => {
+    console.log('Cat: ', event.target.value);
+    setCategory(event.target.value);
+  }
+
   const deleteProduct = (id: number) => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: "Estás seguro?",
+      text: "No podrás revertir esto!",
       icon: "warning",
       showCancelButton: true,
+      cancelButtonText: "Cancelar",
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonText: "Eliminar"
     }).then(async (result) => {
       if (result.isConfirmed) {
         console.log(id)
@@ -103,13 +138,25 @@ export default function Orders(props: {products: Product[]}, ) {
           const response = await axios.delete(`https://localhost:7151/api/Product/Remove/${id}`);
           console.log(response.data);
           Swal.fire({
-            title: "Deleted!",
-            text: "The product has been deleted.",
+            title: "Exito!",
+            text: "El producto fue eliminado exitosamente!",
             icon: "success"
           });
-          // fetchData();
-        } catch (err) {
+          onProductsUpdate();
+          
+        } catch (err: any) {
           console.error(err);
+          const nestedData = err.response.data;
+          console.log(nestedData)
+    
+          const value: any = Object.values(nestedData)[0];
+          const message = value[0];
+    
+          Swal.fire({
+            title: "Error!",
+            text: message,
+            icon: "error"
+          });
         }
       }
     });
@@ -132,7 +179,7 @@ export default function Orders(props: {products: Product[]}, ) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {props.products.map((product) => (
+          {products.map((product) => (
             <TableRow key={product.id}>
               <TableCell>{product.id}</TableCell>
               <TableCell>{product.name}</TableCell>
@@ -149,7 +196,7 @@ export default function Orders(props: {products: Product[]}, ) {
                 )}
               </TableCell>
               <TableCell align="right">
-                <IconButton aria-label="edit" onClick={editProduct}>
+                <IconButton aria-label="edit" onClick={() => editProduct(product)}>
                   <EditNoteIcon />
                 </IconButton>
                 <IconButton aria-label="delete" onClick={() => deleteProduct(product.id)}>
@@ -170,19 +217,32 @@ export default function Orders(props: {products: Product[]}, ) {
         <DialogContent>
           <Grid container spacing={2}>
             <Grid sx={{paddingTop: '1rem'}} item xs={12} sm={6}>
-              <TextField name="name" required fullWidth id="name" label="Nombre" autoFocus />
+              <TextField name="name" required fullWidth id="name" label="Nombre" autoFocus defaultValue={selectedProduct?.name} />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth id="category" label="Categoria" name="category" />
+            <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Categoria</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={category}
+                  label="Category"
+                  onChange={handleChange}
+                >
+                  {categories?.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth name="price" label="Precio" type="price" id="price" />
+              <TextField required fullWidth name="price" label="Precio" type="price" id="price" defaultValue={selectedProduct?.price} />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth  name="quantity" label="Cantidad" type="quantity" id="quantity" />
+              <TextField required fullWidth  name="quantity" label="Cantidad" type="quantity" id="quantity" defaultValue={selectedProduct?.quantity} />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <TextField required fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" />
+              <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" defaultValue={selectedProduct?.description} />
             </Grid>
           </Grid>
         </DialogContent>
@@ -190,7 +250,7 @@ export default function Orders(props: {products: Product[]}, ) {
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Guardar
           </Button>
-          <Button type="submit" color='error' onClick={updateProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Button color='error' onClick={updateProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Cancelar
           </Button>
         </DialogActions>
