@@ -9,7 +9,6 @@ import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -18,14 +17,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, FormControl, InputAdornment, InputLabel, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, TextField } from '@mui/material';
+import { Button, FormControl, InputAdornment, InputLabel, ListItemButton, ListItemIcon, ListItemText, MenuItem, OutlinedInput, Select, TextField } from '@mui/material';
 import Orders from './Orders';
 import SearchIcon from '@mui/icons-material/Search';
 import Swal from 'sweetalert2';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DialogTitle from '@mui/material/DialogTitle';
 import axios from 'axios';
 
@@ -34,7 +32,7 @@ function Copyright(props: any) {
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="https://www.vhla.net/">
-        Kevin Hawkins From Valhalla Cybernetics
+        Kevin Hawkins from Valhalla Cybernetics. All rights reserved.
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -135,13 +133,40 @@ export default function Dashboard() {
     setOpenCatModal(false);
   };
 
+  const inputNumber = (event: any) => {
+    console.log(event.key);
+    const pattern = /^[0-9]*$/;
+
+    if (!pattern.test(event.key) && event.key != 'Backspace') {
+      event.preventDefault();
+    }
+  }
+
+  const inputAmount = (event: any) => {
+    console.log(event.key);
+    const inputValue = event.target.value;
+    const pattern = /^[0-9]*\.?[0-9]{0,2}$/;
+
+    if (!pattern.test(event.key) && event.key != 'Backspace') {
+      event.preventDefault();
+    }
+
+    if (inputValue.includes('.')) {
+      const decimalPart = inputValue.split('.');
+      console.log(decimalPart[1])
+      if (decimalPart[1].length >= 2 && event.key !== 'Backspace') {
+        event.preventDefault();
+      }
+    }
+  }
+
   useEffect(() => {
     fetchCategories();
     fetchProducts();
   }, []);
 
   const handleChange = (event: any) => {
-    console.log('Cat: ', event.target.value);
+    console.log('Category: ', event.target.value);
     setCategory(event.target.value);
   }
 
@@ -178,7 +203,6 @@ export default function Dashboard() {
     }else {
       setFilteredProducts(products);
     }
-
   };
 
   const saveCategory = async (event: React.FormEvent<HTMLFormElement>)  => {
@@ -274,13 +298,8 @@ export default function Dashboard() {
               <MenuIcon />
             </IconButton>
             <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
-              Prueba Técnica Fullstack
+              Administración de Productos
             </Typography>
-            <IconButton color="inherit" onClick={(()=> setOpenCatModal(true))}>
-              <Badge color="secondary">
-                <AddCircleIcon />
-              </Badge>
-            </IconButton>
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -326,6 +345,7 @@ export default function Dashboard() {
                       variant="outlined"
                     />
                     <Button variant="contained" sx={{textTransform: 'capitalize'}} startIcon={<AddIcon />} onClick={addProduct}>Añadir Producto</Button>
+                    <Button color='secondary' variant="contained" sx={{textTransform: 'capitalize'}} startIcon={<AddIcon />} onClick={(()=> setOpenCatModal(true))}>Añadir Categoría</Button>
                   </div>
                 </Paper>
               </Grid>
@@ -342,32 +362,33 @@ export default function Dashboard() {
       <Dialog open={openAddModal} onClose={addProductClose} PaperProps={{component: 'form', onSubmit: saveProduct}}>
         <DialogTitle>Nuevo Producto</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} style={{paddingTop: '10px'}}>
             <Grid sx={{paddingTop: '1rem'}} item xs={12} sm={6}>
               <TextField name="name" required fullWidth id="name" label="Nombre" autoFocus />
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Categoria</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={category}
-                  label="Category"
-                  onChange={handleChange}
-                >
+                <Select labelId="demo-simple-select-label" id="demo-simple-select"
+                  value={category} label="Category" onChange={handleChange}>
                   {categories.map((cat) => (
                     <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
-              {/* <TextField required fullWidth id="category" label="Category" name="category" /> */}
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField  required fullWidth name="price" label="Precio" id="price" />
+              <FormControl fullWidth >
+                <InputLabel htmlFor="outlined-adornment-amount">Precio</InputLabel>
+                <OutlinedInput  style={{height: '3.5em'}}
+                  id="outlined-adornment-amount"
+                  startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                  label="Precio" required fullWidth name="price" onKeyDown={inputAmount}
+                />
+              </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth  name="quantity" label="Cantidad" id="quantity" />
+              <TextField required fullWidth  name="quantity" label="Cantidad" id="quantity" onKeyDown={inputNumber} />
             </Grid>
             <Grid item xs={12} sm={12}>
               <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" />
@@ -378,7 +399,7 @@ export default function Dashboard() {
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Guardar
           </Button>
-          <Button type="submit" color='error' onClick={addProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Button color='error' onClick={addProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Cancelar
           </Button>
         </DialogActions>
@@ -399,7 +420,7 @@ export default function Dashboard() {
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Guardar
           </Button>
-          <Button type="submit" color='error' onClick={catProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Button color='error' onClick={catProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Cancelar
           </Button>
         </DialogActions>

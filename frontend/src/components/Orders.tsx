@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-// import Link from '@mui/material/Link';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
@@ -67,9 +66,9 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
       id: selectedProduct?.id,
       name: data.get('name'),
       description: data.get('desc'),
-      category: data.get('category'),
-      price: data.get('price'),
-      quantity: data.get('quantity'),
+      categoryId: category,
+      price: Number(data.get('price')),
+      quantity: Number(data.get('quantity')),
     }
     console.log(product);
     try {
@@ -80,6 +79,7 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
       });
       console.log(response.data);
       updateProductClose();
+      onProductsUpdate();
       Swal.fire({
         title: "Exito!",
         text: "El producto fue actualizado exitosamente.",
@@ -119,6 +119,33 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
   const handleChange = (event: any) => {
     console.log('Cat: ', event.target.value);
     setCategory(event.target.value);
+  }
+
+  const inputNumber = (event: any) => {
+    console.log(event.key);
+    const pattern = /^[0-9]*$/;
+
+    if (!pattern.test(event.key) && event.key != 'Backspace') {
+      event.preventDefault();
+    }
+  }
+
+  const inputAmount = (event: any) => {
+    console.log(event.key);
+    const inputValue = event.target.value;
+    const pattern = /^[0-9]*\.?[0-9]{0,2}$/;
+
+    if (!pattern.test(event.key) && event.key != 'Backspace') {
+      event.preventDefault();
+    }
+
+    if (inputValue.includes('.')) {
+      const decimalPart = inputValue.split('.');
+      console.log(decimalPart[1])
+      if (decimalPart[1].length >= 2 && event.key !== 'Backspace') {
+        event.preventDefault();
+      }
+    }
   }
 
   const deleteProduct = (id: number) => {
@@ -182,9 +209,12 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
           {products.map((product) => (
             <TableRow key={product.id}>
               <TableCell>{product.id}</TableCell>
-              <TableCell>{product.name}</TableCell>
+              <TableCell>
+                {product.name}
+                <p style={{color: 'gray', fontSize: '10px'}}>{product.description}</p>
+              </TableCell>
               <TableCell>{getCategoryName(product.categoryId)}</TableCell>
-              <TableCell>{product.price}</TableCell>
+              <TableCell>${product.price}</TableCell>
               <TableCell>{product.quantity}</TableCell>
               <TableCell>
                 {product.inventory === 'En Stock' ? (
@@ -215,7 +245,7 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
       >
         <DialogTitle>Actualizar Produto</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} style={{paddingTop: '10px'}}>
             <Grid sx={{paddingTop: '1rem'}} item xs={12} sm={6}>
               <TextField name="name" required fullWidth id="name" label="Nombre" autoFocus defaultValue={selectedProduct?.name} />
             </Grid>
@@ -236,10 +266,17 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth name="price" label="Precio" type="price" id="price" defaultValue={selectedProduct?.price} />
+              <FormControl fullWidth >
+                <InputLabel htmlFor="outlined-adornment-amount">Precio</InputLabel>
+                <OutlinedInput  style={{height: '3.5em'}}
+                  id="outlined-adornment-amount"
+                  startAdornment={<InputAdornment position="start">$</InputAdornment>}
+                  label="Precio" required fullWidth name="price" onKeyDown={inputAmount} defaultValue={selectedProduct?.price}
+                />
+              </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField required fullWidth  name="quantity" label="Cantidad" type="quantity" id="quantity" defaultValue={selectedProduct?.quantity} />
+              <TextField required fullWidth  name="quantity" label="Cantidad" id="quantity" onKeyDown={inputNumber} defaultValue={selectedProduct?.quantity} />
             </Grid>
             <Grid item xs={12} sm={12}>
               <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" defaultValue={selectedProduct?.description} />
