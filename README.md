@@ -1,2 +1,2 @@
-# prueba_tecnica
-Prueba Tecnica Fullstack 
+# admin_productos
+Adminstrador de productos
