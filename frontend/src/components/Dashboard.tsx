@@ -26,6 +26,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import axios from 'axios';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 function Copyright(props: any) {
   return (
@@ -42,6 +43,19 @@ function Copyright(props: any) {
 
 const drawerWidth: number = 240;
 
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
+
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
@@ -53,6 +67,7 @@ interface Category {
 
 interface Product {
   id: number;
+  imageUrl: string,
   name: string;
   categoryId: number;
   price: number;
@@ -116,6 +131,8 @@ export default function Dashboard() {
   const [openCatModal, setOpenCatModal] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -192,6 +209,18 @@ export default function Dashboard() {
     }
   };
 
+  const imageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const searchProduct = (event: any) => {
     const product = event.target.value;    
     const productList = products.filter(item => item.name.toLowerCase().includes(product.toLowerCase()));
@@ -243,6 +272,7 @@ export default function Dashboard() {
     const data = new FormData(event.currentTarget);
     const product = {
       name: data.get('name'),
+      imageUrl: 'hola',
       description: data.get('desc'),
       categoryId: category,
       price: Number(data.get('price')),
@@ -392,6 +422,14 @@ export default function Dashboard() {
             </Grid>
             <Grid item xs={12} sm={12}>
               <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" />
+            </Grid>
+            <Grid sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}} item xs={12}>
+              <Button component="label" sx={{mb: 2}} role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
+                Subir imagen
+                <VisuallyHiddenInput name='image' type="file" onChange={imageChange}/>
+              </Button>
+              {imagePreview && <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />}
+              {imageName && <p>{imageName}</p>}
             </Grid>
           </Grid>
         </DialogContent>

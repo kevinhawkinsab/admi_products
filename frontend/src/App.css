@@ -1,3 +1,13 @@
+.capitalize {
+    text-transform: capitalize;
+}
+
+.upper{
+    font-size: 10px;
+    color: gray;
+    text-transform: uppercase;
+}
+
 .stock {
     display: flex;
     color: green;
@@ -7,6 +17,10 @@
         font-size: 12px;
         margin-right: 5px;
     }
+}
+
+.img {
+    width: 100px;
 }
 
 .limited {

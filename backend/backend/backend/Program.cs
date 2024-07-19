@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Context;
+using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,14 @@ var connectionString = builder.Configuration.GetConnectionString("CadenaConeccio
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
+var cloudinaryConfig = builder.Configuration.GetSection("Cloudinary");
+var cloudinary = new Cloudinary(new Account(
+     cloudinaryConfig["CloudName"],
+     cloudinaryConfig["ApiKey"],
+     cloudinaryConfig["ApiSecret"]
+));
+
+builder.Services.AddSingleton(cloudinary);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

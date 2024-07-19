@@ -19,6 +19,7 @@ interface Category {
 
 interface Product {
   id: number;
+  imageUrl: string,
   name: string;
   categoryId: number;
   price: number;
@@ -208,10 +209,10 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
         <TableBody>
           {products.map((product) => (
             <TableRow key={product.id}>
-              <TableCell>{product.id}</TableCell>
-              <TableCell>
+              <TableCell><img className='img' src={product.imageUrl} /></TableCell>
+              <TableCell className='capitalize'>
                 {product.name}
-                <p style={{color: 'gray', fontSize: '10px'}}>{product.description}</p>
+                <p className='upper'>{product.description}</p>
               </TableCell>
               <TableCell>{getCategoryName(product.categoryId)}</TableCell>
               <TableCell>${product.price}</TableCell>
