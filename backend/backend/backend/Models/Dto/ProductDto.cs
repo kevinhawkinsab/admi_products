@@ -22,6 +22,8 @@ namespace backend.Models.Dto
 
         public string Description { get; set; }
 
+        public string ImageUrl { get; set; }
+
         public string Inventory
         {
             get

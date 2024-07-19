@@ -18,7 +18,7 @@ namespace backend.Controllers
 
         [HttpGet]
         [Route("Products")]
-        public async Task<IActionResult> getProducts()
+        public async Task<IActionResult> GetProducts()
         {
             var products = await dbContext.Products.ToListAsync();
             var productDtos = products.Select(product => new ProductDto
@@ -37,7 +37,7 @@ namespace backend.Controllers
 
         [HttpGet]
         [Route("ProductBy/{id:int}")]
-        public async Task<IActionResult> getOneProduct(int id)
+        public async Task<IActionResult> GetOneProduct(int id)
         {
             var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -61,7 +61,7 @@ namespace backend.Controllers
 
         [HttpPost]
         [Route("Create")]
-        public async Task<IActionResult> createProduct([FromBody] ProductDto productDto)
+        public async Task<IActionResult> CreateProduct([FromBody] ProductDto productDto)
         {
             if(!ModelState.IsValid)
             {
@@ -74,6 +74,7 @@ namespace backend.Controllers
                 Description = productDto.Description,
                 Price = productDto.Price,
                 Quantity = productDto.Quantity,
+                ImageUrl = productDto.ImageUrl,
                 Inventory = productDto.Inventory,
                 CategoryId = productDto.CategoryId
             };
@@ -88,6 +89,7 @@ namespace backend.Controllers
                 product.Description,
                 product.Price,
                 product.Quantity,
+                product.ImageUrl,
                 product.Inventory,
                 product.CategoryId
             };
@@ -97,7 +99,7 @@ namespace backend.Controllers
 
         [HttpPut]
         [Route("Update")]
-        public async Task<IActionResult> updateProduct([FromBody] ProductDto productDto)
+        public async Task<IActionResult> UpdateProduct([FromBody] ProductDto productDto)
         {
             if (!ModelState.IsValid)
             {
@@ -137,7 +139,7 @@ namespace backend.Controllers
 
         [HttpDelete]
         [Route("Remove/{id:int}")]
-        public async Task<IActionResult> deleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = await dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
 
