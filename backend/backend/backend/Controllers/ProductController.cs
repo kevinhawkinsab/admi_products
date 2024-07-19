@@ -1,6 +1,8 @@
 ﻿using backend.Context;
 using backend.Models;
 using backend.Models.Dto;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +12,11 @@ namespace backend.Controllers
     public class ProductController : ControllerBase
     {
         private readonly AppDbContext dbContext;
-
-        public ProductController(AppDbContext _dbContext)
+        private readonly Cloudinary cloudinary;
+        public ProductController(AppDbContext _dbContext, Cloudinary _cloudinary)
         {
             dbContext = _dbContext;
+            cloudinary = _cloudinary;
         }
 
         [HttpGet]
@@ -21,14 +24,16 @@ namespace backend.Controllers
         public async Task<IActionResult> GetProducts()
         {
             var products = await dbContext.Products.ToListAsync();
-            var productDtos = products.Select(product => new ProductDto
+            var productDtos = products.Select(product => new
             {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                CategoryId = product.CategoryId
+                product.Id,
+                product.Name,
+                product.Description,
+                product.Price,
+                product.ImageUrl,
+                product.Inventory,
+                product.Quantity,
+                product.CategoryId
             }).ToList();
             
 
@@ -46,14 +51,16 @@ namespace backend.Controllers
                 return NotFound(new { message = $"The product does not exist." });
             }
 
-            var productDto = new ProductDto
+            var productDto = new 
             {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                CategoryId = product.CategoryId
+                product.Id,
+                product.Name,
+                product.Description,
+                product.ImageUrl,
+                product.Inventory,
+                product.Price,
+                product.Quantity,
+                product.CategoryId
             };
 
             return Ok(productDto);
@@ -61,11 +68,31 @@ namespace backend.Controllers
 
         [HttpPost]
         [Route("Create")]
-        public async Task<IActionResult> CreateProduct([FromBody] ProductDto productDto)
+        public async Task<IActionResult> CreateProduct([FromForm] ProductDto productDto, [FromForm] IFormFile image)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            string imageUrl = null;
+
+            if (image != null)
+            {
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(image.FileName, image.OpenReadStream()),
+                    AssetFolder = "admin_products_app"
+                };
+
+                var uploadResult = await cloudinary.UploadAsync(uploadParams);
+
+                if (uploadResult == null || uploadResult.SecureUrl == null)
+                {
+                    return StatusCode(500, "Image upload failed");
+                }
+
+                imageUrl = uploadResult.SecureUrl.ToString();
             }
 
             var product = new Product
@@ -74,7 +101,7 @@ namespace backend.Controllers
                 Description = productDto.Description,
                 Price = productDto.Price,
                 Quantity = productDto.Quantity,
-                ImageUrl = productDto.ImageUrl,
+                ImageUrl = imageUrl,
                 Inventory = productDto.Inventory,
                 CategoryId = productDto.CategoryId
             };

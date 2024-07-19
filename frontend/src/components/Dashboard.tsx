@@ -270,24 +270,18 @@ export default function Dashboard() {
   const saveProduct = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const product = {
-      name: data.get('name'),
-      imageUrl: 'hola',
-      description: data.get('desc'),
-      categoryId: category,
-      price: Number(data.get('price')),
-      quantity: Number(data.get('quantity')),
-    }
-    console.log(product);
+
     try {
-      const response = await axios.post('https://localhost:7151/api/Product/Create', product, {
+      const response = await axios.post('https://localhost:7151/api/Product/Create', data, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'multipart/form-data'
         }
       });
+      
       setOpenAddModal(false);
       console.log(response.data);
       fetchProducts();
+
       Swal.fire({
         title: "Exito!",
         text: "El producto fue creado exitosamente.",
@@ -399,7 +393,7 @@ export default function Dashboard() {
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Categoria</InputLabel>
-                <Select labelId="demo-simple-select-label" id="demo-simple-select"
+                <Select labelId="demo-simple-select-label" id="demo-simple-select" name="categoryId"
                   value={category} label="Category" onChange={handleChange}>
                   {categories.map((cat) => (
                     <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
@@ -421,7 +415,7 @@ export default function Dashboard() {
               <TextField required fullWidth  name="quantity" label="Cantidad" id="quantity" onKeyDown={inputNumber} />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" />
+              <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="description" />
             </Grid>
             <Grid sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}} item xs={12}>
               <Button component="label" sx={{mb: 2}} role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
