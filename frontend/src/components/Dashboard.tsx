@@ -125,7 +125,7 @@ const defaultTheme = createTheme();
 
 export default function Dashboard() {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState(1);
+  const [category, setCategory] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openCatModal, setOpenCatModal] = useState(false);
@@ -144,6 +144,8 @@ export default function Dashboard() {
 
   const addProductClose = () => {
     setOpenAddModal(false);
+    setImagePreview(null);
+    setImageName(null);
   };
 
   const catProductClose = () => {
@@ -304,6 +306,9 @@ export default function Dashboard() {
         icon: "error"
       });
     }
+
+    setImagePreview(null);
+    setImageName(null);
   };
 
 
@@ -391,7 +396,7 @@ export default function Dashboard() {
               <TextField name="name" required fullWidth id="name" label="Nombre" autoFocus />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              <FormControl fullWidth required>
                 <InputLabel id="demo-simple-select-label">Categoria</InputLabel>
                 <Select labelId="demo-simple-select-label" id="demo-simple-select" name="categoryId"
                   value={category} label="Category" onChange={handleChange}>
@@ -415,7 +420,7 @@ export default function Dashboard() {
               <TextField required fullWidth  name="quantity" label="Cantidad" id="quantity" onKeyDown={inputNumber} />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="description" />
+              <TextField required fullWidth multiline rows={4} id="desc" label="Descripción" name="description" />
             </Grid>
             <Grid sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}} item xs={12}>
               <Button component="label" sx={{mb: 2}} role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
@@ -428,7 +433,7 @@ export default function Dashboard() {
           </Grid>
         </DialogContent>
         <DialogActions sx={{padding: '0 1.5rem'}}>
-          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          <Button type="submit" disabled={category==0} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
             Guardar
           </Button>
           <Button color='error' onClick={addProductClose} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>

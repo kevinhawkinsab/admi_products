@@ -126,18 +126,39 @@ namespace backend.Controllers
 
         [HttpPut]
         [Route("Update")]
-        public async Task<IActionResult> UpdateProduct([FromBody] ProductDto productDto)
+        public async Task<IActionResult> UpdateProduct([FromForm] ProductDto productDto, [FromForm] IFormFile image)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+
             var product = await dbContext.Products.FindAsync(productDto.Id);
             
             if(product == null)
             {
-                return NotFound(new { message = "Product not found" });
+                return NotFound(new { message = "El producto no ha sido encontrado" });
+            }
+
+            string imageUrl = null;
+
+            if (image != null)
+            {
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(image.FileName, image.OpenReadStream()),
+                    AssetFolder = "admin_products_app"
+                };
+
+                var uploadResult = await cloudinary.UploadAsync(uploadParams);
+
+                if (uploadResult == null || uploadResult.SecureUrl == null)
+                {
+                    return StatusCode(500, "Image upload failed");
+                }
+
+                imageUrl = uploadResult.SecureUrl.ToString();
             }
 
             product.Name = productDto.Name;
@@ -146,6 +167,7 @@ namespace backend.Controllers
             product.Quantity = productDto.Quantity;
             product.CategoryId = productDto.CategoryId;
             product.Inventory = productDto.Inventory;
+            product.ImageUrl = imageUrl;
 
             await dbContext.SaveChangesAsync();
 
@@ -157,7 +179,8 @@ namespace backend.Controllers
                 product.Price,
                 product.Quantity,
                 product.Inventory,
-                product.CategoryId
+                product.CategoryId,
+                product.ImageUrl
             };
 
             return Ok(result);

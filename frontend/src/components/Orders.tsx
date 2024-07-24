@@ -4,12 +4,13 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, styled, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 
 interface Category {
@@ -33,14 +34,30 @@ interface OrdersProps {
   onProductsUpdate: () => void;
 }
 
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
+
 export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
   const [categories, setCategories] = useState<Array<Category> | null>(null);
   const [category, setCategory] = useState(1);
   const [selectedProduct, setSelectedProducts] = useState<Product | null>(null);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
 
   const editProduct = (product: Product) => {
     console.log(product);
+    setImagePreview(product.imageUrl);
     setCategory(product.categoryId);
     setSelectedProducts(product);
     setOpenUpdateModal(true);
@@ -63,24 +80,19 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
   const updProduct = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const product = {
-      id: selectedProduct?.id,
-      name: data.get('name'),
-      description: data.get('desc'),
-      categoryId: category,
-      price: Number(data.get('price')),
-      quantity: Number(data.get('quantity')),
-    }
-    console.log(product);
+    data.append('id', selectedProduct?.id + '');
+
+    // console.log(data);
     try {
-      const response = await axios.put(`https://localhost:7151/api/Product/Update/`,  product, {
+      const response = await axios.put(`https://localhost:7151/api/Product/Update/`,  data, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'multipart/form-data'
         }
       });
       console.log(response.data);
-      updateProductClose();
+      setOpenUpdateModal(false);
       onProductsUpdate();
+
       Swal.fire({
         title: "Exito!",
         text: "El producto fue actualizado exitosamente.",
@@ -89,7 +101,7 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
       
     } catch (err: any) {
       console.error(err);
-      updateProductClose();
+      setOpenUpdateModal(false);
       const nestedData = err.response.data;
       
       console.log(nestedData)
@@ -108,6 +120,9 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
         text: message,
         icon: "error"
       });
+
+      setImagePreview(null);
+      setImageName(null);
     }
   };
 
@@ -121,6 +136,18 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
     console.log('Cat: ', event.target.value);
     setCategory(event.target.value);
   }
+
+  const imageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const inputNumber = (event: any) => {
     console.log(event.key);
@@ -253,13 +280,8 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
             <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Categoria</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={category}
-                  label="Category"
-                  onChange={handleChange}
-                >
+                <Select labelId="demo-simple-select-label" id="demo-simple-select" name="categoryId"
+                  value={category} label="Category" onChange={handleChange}>
                   {categories?.map((cat) => (
                     <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
                   ))}
@@ -280,8 +302,17 @@ export default function Orders({ products, onProductsUpdate }: OrdersProps ) {
               <TextField required fullWidth  name="quantity" label="Cantidad" id="quantity" onKeyDown={inputNumber} defaultValue={selectedProduct?.quantity} />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="desc" defaultValue={selectedProduct?.description} />
+              <TextField fullWidth multiline rows={4} id="desc" label="Descripción" name="description" defaultValue={selectedProduct?.description} />
             </Grid>
+            <Grid sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}} item xs={12}>
+              <Button component="label" sx={{mb: 2}} role={undefined} variant="contained" tabIndex={-1} startIcon={<CloudUploadIcon />}>
+                Cambiar imagen
+                <VisuallyHiddenInput name='image' type="file" onChange={imageChange}/>
+              </Button>
+              {imagePreview && <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />}
+              {imageName && <p>{imageName}</p>}
+            </Grid>
+
           </Grid>
         </DialogContent>
         <DialogActions sx={{padding: '0 1.5rem'}}>
